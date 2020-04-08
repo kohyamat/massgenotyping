@@ -2,6 +2,19 @@
 massgenotyping
 ==============
 
+.. image:: https://img.shields.io/pypi/v/massgenotyping.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/massgenotyping
+    :alt: Latest Version
+
+.. image:: https://img.shields.io/pypi/pyversions/massgenotyping.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/massgenotyping
+    :alt: Supported Python versions
+
+.. image:: https://img.shields.io/pypi/l/massgenotyping.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/massgenotyping/
+    :alt: License
+
+
 Python package for microsatellite genotyping from highly multiplexed amplicon sequencing data
 
 
@@ -84,6 +97,8 @@ The details of the options for each subcommand can be checked by :code:`mgt SUBC
 
 Tutorials with example data
 ---------------------------
+
+Here's a step-by-step tutorial using the `example data <https://github.com/kohyamat/massgenotyping/tree/master/examples>`_
 
 **1. Demultiplex raw amplicon sequences based on primer sequences**
 
