@@ -20,22 +20,33 @@ def main():
 
         denoise.main(args)
 
-    elif args.subcommand == "filter":
-        from . import variant_filter
+    else:
+        from matplotlib import get_backend
 
-        variant_filter.main(args)
+        if get_backend() == "agg":
+            print(
+                (
+                    "\033[33mWARNING: No display found. "
+                    "Skip visual checking procedures\033[0m"
+                )
+            )
 
-    elif args.subcommand == "allele-check":
-        from . import allele_check
+        if args.subcommand == "filter":
+            from . import variant_filter
 
-        allele_check.main(args)
+            variant_filter.main(args)
 
-    elif args.subcommand == "allele-call":
-        from . import allele_call
+        elif args.subcommand == "allele-check":
+            from . import allele_check
 
-        allele_call.main(args)
+            allele_check.main(args)
 
-    elif args.subcommand == "show-alignment":
-        from . import show_alignment
+        elif args.subcommand == "allele-call":
+            from . import allele_call
 
-        show_alignment.main(args)
+            allele_call.main(args)
+
+        elif args.subcommand == "show-alignment":
+            from . import show_alignment
+
+            show_alignment.main(args)
