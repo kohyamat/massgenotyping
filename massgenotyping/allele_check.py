@@ -17,7 +17,7 @@ from natsort import natsorted
 
 from .argument_parser import ask_user, get_args, print_args
 from .base import SeqData, count_uniq_seq, read_fastx
-from .find_ssrs import find_ssrs, get_best_RepData, remove_gaps, unfold_rep_seq
+from .find_ssrs import find_ssrs, get_longest_RepData, remove_gaps, unfold_rep_seq
 from .utils import make_blastdb, run_mafft
 from .variant_filter import pairwise_dist_Levenstein
 
@@ -725,7 +725,7 @@ def find_variable_ssrs(align, min_variants=3, **kwargs):
         if len(group) >= min_variants:
             starts, ends = list(zip(*[[rep.start, rep.end] for rep in group]))
             ssr_regions.append((np.min(starts), np.max(ends)))
-            motifs.append(get_best_RepData(group).motif)
+            motifs.append(get_longest_RepData(group).motif)
 
     return ssr_regions, motifs
 
@@ -749,7 +749,7 @@ def characterise_ssrs(align, ssr_region, motif, max_interrupt=None):
                 end=ssr_region_ng[-1],
                 max_interrupt=len(motif),
             )
-            best = get_best_RepData(rep)
+            best = get_longest_RepData(rep)
             reps.append(best)
         else:
             reps.append(None)

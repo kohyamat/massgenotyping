@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 from .argument_parser import ask_user, get_args, print_args
 from .base import MarkerData, SeqData, count_records, count_uniq_seq, read_fastx
-from .find_ssrs import find_ssrs, get_best_RepData
+from .find_ssrs import find_ssrs, get_longest_RepData
 from .utils import run_mafft
 
 
@@ -39,7 +39,7 @@ class VariantFilter(MarkerData):
         force_no_visual_check=False,
         n_cpu=1,
         quiet=False,
-        **kwargs
+        **kwargs,
     ):
 
         self.indir = Path(indir)
@@ -172,7 +172,7 @@ class VariantFilter(MarkerData):
         in_list = [True if s.seq in self.uniq_seqs else False for s in seqdat]
 
         for s in seqdat:
-            s.rep_data = get_best_RepData(find_ssrs(s.seq))
+            s.rep_data = get_longest_RepData(find_ssrs(s.seq))
 
         if keep is None:
             while True:
@@ -586,8 +586,8 @@ class VisualCheck(object):
                 s += ", ".join(["Seq{}".format(x) for x in self.selected])
             c = "k"
         else:
-            s = u"Left click on a sequence  (or press \u2191/\u2193 key) to "
-            s += u"show information \n right click (or press \u2190/\u2192"
+            s = "Left click on a sequence  (or press \u2191/\u2193 key) to "
+            s += "show information \n right click (or press \u2190/\u2192"
             s += r" key) to select the sequence to $\bf{keep}$"
             c = "grey"
 
