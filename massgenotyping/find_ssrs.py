@@ -1,5 +1,6 @@
 import re
 from itertools import product
+from typing import Iterator, List, Optional, Tuple, Union
 
 from fuzzysearch.common import group_matches
 
@@ -8,51 +9,49 @@ from .base import RepData, revc
 rep_seq_pat = re.compile("\\(([ACGT]+)\\)_{([0-9]+)}([ACTG]*)")
 
 
-def rotate(string):
+def rotate(string: str) -> Iterator[str]:
+    """Rotate the characters in the input string one by one."""
     for i in range(len(string)):
         yield string[i:] + string[:i]
 
 
-def motif_set(motif_class):
+def motif_set(motif_class: str) -> Iterator[str]:
+    """Return all sequences of the same motif class."""
     for i in rotate(motif_class):
         yield i
     for i in rotate(revc(motif_class)):
         yield i
 
 
-def gen_motif_classes(min_motif_len=2, max_motif_len=6):
+def gen_motif_classes(min_motif_len: int = 2, max_motif_len: int = 6) -> Iterator[str]:
+    """Generate repeat-motif classes for a given range of sequence lengths."""
     motifs = []
     for mlen in range(min_motif_len, max_motif_len + 1):
-        for mcls in product(list("ACGT"), repeat=mlen):
-            mcls = "".join(mcls)
-            if len(set(mcls)) > 1:
-                if mcls not in motifs:
-                    motifs += list(motif_set(mcls))
-                    yield mcls
+        for mcls_ in product("ACGT", repeat=mlen):
+            mcls = "".join(mcls_)
+            if len(set(mcls)) == 1:
+                continue
+            if mcls not in motifs:
+                motifs.extend(list(motif_set(mcls)))
+                yield mcls
 
 
-def get_motif_class(motif):
+def get_motif_class(motif: str) -> str:
+    """Return the class of the given motif."""
     for mcls in gen_motif_classes(len(motif), len(motif) + 1):
         for m in motif_set(mcls):
             if m == motif:
                 return mcls
     else:
         raise ValueError(
-            "Unable to find the class of input motif. "
-            "Maybe it contains a character other than A, C, G, T?"
+            "Unable to find the class of the given motif. "
+            "Maybe it contains a character other than ['A', 'C', 'G', 'T']?"
         )
 
 
-def get_best_match_in_group_RepData(group):
-    try:
-        return max(group, key=lambda x: (x.n_reps, -x.start))
-    except ValueError:
-        return
-
-
-def remove_gaps(seq):
-    seqout = ""
-    idx = []
+def remove_gaps(seq: str) -> Tuple[str, List[int]]:
+    """Remove gaps in the given sequence."""
+    seqout, idx = "", []
     for i, char in enumerate(seq):
         if char != "-":
             seqout += char
@@ -60,17 +59,21 @@ def remove_gaps(seq):
     return seqout, idx
 
 
-def _find_ssrs(seq, motif, min_repeats=3, max_interrupt=0):
+def _find_ssrs(
+    seq: str, motif: str, min_repeats: int = 3, max_interrupt: int = 0
+) -> Iterator[Tuple[int, int, int, str]]:
     seqng, idx = remove_gaps(seq.upper())
     mlen = len(motif)
 
-    def find_in_index_range(string, substring, n, start_index, end_index=None):
+    def find_in_index_range(
+        string: str, substring: str, n: int, start_index: int, end_index: int = None
+    ) -> Tuple[int, int, int]:
         try:
-            match = string.find(substring * n, start_index, end_index)
+            start = string.find(substring * n, start_index, end_index)
         except AttributeError:
-            raise ValueError("seq must be a str like object")
-        start = match
-        while match >= 0:
+            raise ValueError("'seq' must be a str object")
+        match = start
+        while match > -1:
             n += 1
             match = string.find(substring * n, start_index, start + len(substring) * n)
         n_reps = n - 1
@@ -123,23 +126,22 @@ def _find_ssrs(seq, motif, min_repeats=3, max_interrupt=0):
 
 
 def find_ssrs(
-    seq,
-    min_repeats=3,
-    motif=None,
-    motif_class=None,
-    min_motif_len=2,
-    max_motif_len=4,
-    max_interrupt=None,
-    return_only_best=False,
-    start=0,
-    end=None,
-    **kwargs
-):
+    seq: str,
+    min_repeats: int = 3,
+    motif: Union[str, List[str]] = [],
+    motif_class: Union[str, List[str]] = [],
+    min_motif_len: int = 2,
+    max_motif_len: int = 4,
+    max_interrupt: int = 0,
+    start: int = 0,
+    end: Optional[int] = None,
+    **kwargs,
+) -> Optional[List[RepData]]:
     """
-    Find short sequence repeats in the given sequence string
+    Find short sequence repeats in the given sequence string.
 
     Parameters
-    -----
+    ----------
     seq: str
         input sequence string
     min_repeats: int
@@ -154,29 +156,16 @@ def find_ssrs(
         maximum length of repeat motif (default: 5)
     max_interrupt: int
         maximum length of interruption to allow (default: None)
-    return_only_best: bool
-        remove overlapping matches and return the longest match (default: False)
     start: int
         starting postion where ssr needs to be search
     end: int
         ending postion where ssr needs to be search
+
     """
     subseq = seq[start:end]
     matches = []
-    if not motif:
-        if not motif_class:
-            motif_classes = gen_motif_classes(min_motif_len, max_motif_len)
-        elif isinstance(motif_class, str):
-            motif_classes = [motif_class]
-        elif not isinstance(motif_class, list):
-            raise TypeError("motif_class must be a str or list")
-
-        for mcls in motif_classes:
-            for m in motif_set(mcls):
-                for s, e, n, rs in _find_ssrs(subseq, m, min_repeats, max_interrupt):
-                    matches.append(RepData(s + start, e + start, n, rs, m, mcls))
-    else:
-        if isinstance(motif_class, list):
+    if motif:
+        if isinstance(motif, list):
             motifs = motif
         if isinstance(motif, str):
             motifs = [motif]
@@ -187,44 +176,34 @@ def find_ssrs(
         for m, mcls in zip(motifs, motif_classes):
             for s, e, n, rs in _find_ssrs(subseq, m, min_repeats, max_interrupt):
                 matches.append(RepData(s + start, e + start, n, rs, m, mcls))
+    else:
+        if not motif_class:
+            motif_classes = list(gen_motif_classes(min_motif_len, max_motif_len))
+        elif isinstance(motif_class, str):
+            motif_classes = [motif_class]
+        elif not isinstance(motif_class, list):
+            raise TypeError("motif_class must be a str or list")
+
+        for mcls in motif_classes:
+            for m in motif_set(mcls):
+                for s, e, n, rs in _find_ssrs(subseq, m, min_repeats, max_interrupt):
+                    matches.append(RepData(s + start, e + start, n, rs, m, mcls))
 
     match_groups = group_matches(matches)
-    best_matches = [get_best_match_in_group_RepData(g) for g in match_groups]
+    best_matches = [get_best_RepData(g) for g in match_groups if g]
 
-    if return_only_best:
-        return get_best_match_in_group_RepData(best_matches)
-    else:
-        return sorted(best_matches, key=lambda m: m.start)
+    return list(sorted(best_matches, key=lambda m: m.start))
 
 
-def unfold_rep_seq(rep_seq):
+def get_best_RepData(group: List[RepData]) -> RepData:
+    """Return the best match RepData in the group."""
+    return max(group, key=lambda x: (x.n_reps, -x.start))
+
+
+def unfold_rep_seq(rep_seq: str) -> str:
+    """Unfold the rep_seq string."""
     unfolded = ""
     matches = rep_seq_pat.findall(rep_seq)
     for m in matches:
         unfolded += m[0] * int(m[1]) + m[2]
     return unfolded
-
-
-if __name__ == "__main__":
-    # test
-    import timeit
-
-    seq = "ATT--AATATTA---TTATT-ATTTTTATTGCGGGGGGGGATTATTATTATT"
-    motif = "ATT"
-    rep = find_ssrs(seq, motif=motif, max_interrupt=3)
-    print([r.rep_seq for r in rep])
-    print([unfold_rep_seq(r.rep_seq) for r in rep])
-
-    t1 = timeit.timeit(
-        "find_ssrs(seq, motif=motif, return_only_best=True)",
-        number=1000,
-        globals=globals(),
-    )
-    print(find_ssrs(seq, motif=motif, return_only_best=True))
-    print(t1)
-
-    t2 = timeit.timeit(
-        "find_ssrs(seq, return_only_best=True)", number=1000, globals=globals()
-    )
-    print(find_ssrs(seq, return_only_best=True))
-    print(t2)

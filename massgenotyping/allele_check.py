@@ -12,13 +12,12 @@ import numpy as np
 from Bio import AlignIO, Phylo
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor, _DistanceMatrix
 from fuzzysearch.common import group_matches
-from matplotlib import colors, gridspec, patches, get_backend
+from matplotlib import colors, gridspec, patches
 from natsort import natsorted
 
 from .argument_parser import ask_user, get_args, print_args
 from .base import SeqData, count_uniq_seq, read_fastx
-from .find_ssrs import (find_ssrs, get_best_match_in_group_RepData, remove_gaps,
-                        unfold_rep_seq)
+from .find_ssrs import find_ssrs, get_best_RepData, remove_gaps, unfold_rep_seq
 from .utils import make_blastdb, run_mafft
 from .variant_filter import pairwise_dist_Levenstein
 
@@ -30,7 +29,7 @@ class AlleleCheck(object):
         outdir=None,
         force_no_visual_check=False,
         quiet=False,
-        **kwargs
+        **kwargs,
     ):
 
         self.infile = None
@@ -515,8 +514,8 @@ class VisualAlleleCheck(object):
 
     def show_info(self, idx):
         if idx == -1:
-            s = u"Left click on a sequence  (or press \u2191/\u2193 key) to "
-            s += u"show information \n right click (or press \u2190/\u2192"
+            s = "Left click on a sequence  (or press \u2191/\u2193 key) to "
+            s += "show information \n right click (or press \u2190/\u2192"
             s += r" key) to select the sequence to $\bf{discard}$"
             self.txt0 = self.ax0.text(
                 0.5, 0.6, s=s, color="grey", va="center", ha="center", wrap=True
@@ -726,7 +725,7 @@ def find_variable_ssrs(align, min_variants=3, **kwargs):
         if len(group) >= min_variants:
             starts, ends = list(zip(*[[rep.start, rep.end] for rep in group]))
             ssr_regions.append((np.min(starts), np.max(ends)))
-            motifs.append(get_best_match_in_group_RepData(group).motif)
+            motifs.append(get_best_RepData(group).motif)
 
     return ssr_regions, motifs
 
@@ -750,7 +749,7 @@ def characterise_ssrs(align, ssr_region, motif, max_interrupt=None):
                 end=ssr_region_ng[-1],
                 max_interrupt=len(motif),
             )
-            best = get_best_match_in_group_RepData(rep)
+            best = get_best_RepData(rep)
             reps.append(best)
         else:
             reps.append(None)

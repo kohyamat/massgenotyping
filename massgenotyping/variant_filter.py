@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 from .argument_parser import ask_user, get_args, print_args
 from .base import MarkerData, SeqData, count_records, count_uniq_seq, read_fastx
-from .find_ssrs import find_ssrs
+from .find_ssrs import find_ssrs, get_best_RepData
 from .utils import run_mafft
 
 
@@ -172,7 +172,7 @@ class VariantFilter(MarkerData):
         in_list = [True if s.seq in self.uniq_seqs else False for s in seqdat]
 
         for s in seqdat:
-            s.rep_data = find_ssrs(s.seq, return_only_best=True)
+            s.rep_data = get_best_RepData(find_ssrs(s.seq))
 
         if keep is None:
             while True:

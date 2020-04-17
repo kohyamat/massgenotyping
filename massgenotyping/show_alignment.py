@@ -5,7 +5,7 @@ from matplotlib import get_backend
 
 from .argument_parser import get_args
 from .base import SeqData, count_uniq_seq
-from .find_ssrs import find_ssrs
+from .find_ssrs import find_ssrs, get_best_RepData
 from .variant_filter import VisualCheck
 
 
@@ -78,7 +78,7 @@ def main(args):
             for i, (s, c) in enumerate(count_uniq_seq(seq_file).items())
         ]
         for s in seqdat:
-            s.rep_data = find_ssrs(s.seq, return_only_best=True)
+            s.rep_data = get_best_RepData(find_ssrs(s.seq))
 
         sal = ShowAlignment(seqdat, Path(seq_file).name)
         sal.show()
