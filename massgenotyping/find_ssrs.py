@@ -167,7 +167,7 @@ def find_ssrs(
     if motif:
         if isinstance(motif, list):
             motifs = motif
-        if isinstance(motif, str):
+        elif isinstance(motif, str):
             motifs = [motif]
         else:
             raise TypeError("motif must be a str or list")
@@ -179,9 +179,11 @@ def find_ssrs(
     else:
         if not motif_class:
             motif_classes = list(gen_motif_classes(min_motif_len, max_motif_len))
+        elif isinstance(motif_class, list):
+            motif_classes = motif_class
         elif isinstance(motif_class, str):
             motif_classes = [motif_class]
-        elif not isinstance(motif_class, list):
+        else:
             raise TypeError("motif_class must be a str or list")
 
         for mcls in motif_classes:
@@ -190,12 +192,12 @@ def find_ssrs(
                     matches.append(RepData(s + start, e + start, n, rs, m, mcls))
 
     match_groups = group_matches(matches)
-    best_matches = [get_best_RepData(g) for g in match_groups if g]
+    best_matches = [get_longest_RepData(g) for g in match_groups if g]
 
     return list(sorted(best_matches, key=lambda m: m.start))
 
 
-def get_best_RepData(group: List[RepData]) -> RepData:
+def get_longest_RepData(group: List[RepData]) -> RepData:
     """Return the best match RepData in the group."""
     return max(group, key=lambda x: (x.n_reps, -x.start))
 
