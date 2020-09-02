@@ -131,7 +131,7 @@ def find_ssrs(
     motif: Union[str, List[str]] = [],
     motif_class: Union[str, List[str]] = [],
     min_motif_len: int = 2,
-    max_motif_len: int = 4,
+    max_motif_len: int = 6,
     max_interrupt: int = 0,
     start: int = 0,
     end: Optional[int] = None,
@@ -153,7 +153,7 @@ def find_ssrs(
     min_motif_len: int
         minimum length of repeat motif (default: 2)
     max_motif_len: int
-        maximum length of repeat motif (default: 5)
+        maximum length of repeat motif (default: 6)
     max_interrupt: int
         maximum length of interruption to allow (default: None)
     start: int

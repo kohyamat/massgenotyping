@@ -172,7 +172,10 @@ class VariantFilter(MarkerData):
         in_list = [True if s.seq in self.uniq_seqs else False for s in seqdat]
 
         for s in seqdat:
-            s.rep_data = get_longest_RepData(find_ssrs(s.seq))
+            try:
+                s.rep_data = get_longest_RepData(find_ssrs(s.seq))
+            except ValueError:
+                pass
 
         if keep is None:
             while True:
