@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, Iterator, List, Union, Tuple
 
 import numpy as np
 from Bio import SeqIO
@@ -84,7 +84,7 @@ class MarkerData(object):
         path_fwd_primers=None,
         path_rev_primers=None,
         verbose=False,
-        **kwargs
+        **kwargs,
     ):
         self.dict_primer = self.read_marker_file(
             path_marker_data, path_fwd_primers, path_fwd_primers, verbose
@@ -100,7 +100,7 @@ class MarkerData(object):
                 self.path_marker_data, "Name", "Frag_len"
             )
         except ValueError:
-            return
+            self.dict_frag_len = None
 
     def set_max_alleles(self):
         try:
@@ -108,7 +108,7 @@ class MarkerData(object):
                 self.path_marker_data, "Name", "Max_alleles"
             )
         except ValueError:
-            return
+            self.dict_max_alleles = None
 
     def read_marker_file(
         self,
@@ -152,22 +152,21 @@ class MarkerData(object):
         return dict_primer
 
 
-def revc(seq_string):
-    """
-    Return the reverse compelement of given nucleotide sequence
-    """
+def revc(s: str) -> str:
+    """Return the reverse compelement of given nucleotide sequence."""
     o = "ACGTUWSMKRYBDHVNZacgtuwsmkrybdhvnz-"
     c = "TGCAAWSKMYRVHDBNZtgcaawskmyrvhdbnz-"
-    if len(set(seq_string) & set(o)) > len(set(seq_string)):
+    if len(set(s) & set(o)) > len(set(s)):
         errmsg = "invalid character was found in the sequeces"
-        raise RuntimeWarning(errmsg)
-    return seq_string.translate(str.maketrans(o, c))[::-1]
+        raise RuntimeError(errmsg)
+    return s.translate(str.maketrans(o, c))[::-1]
 
 
-def check_file(filepath):
-    """
-    Check if a path exists and if it is a file
-    """
+def check_file(filepath: Union[str, Path]):
+    """Check if a path exists and if it is a file."""
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
+
     if not filepath.exists():
         errmsg = "File not found: {}".format(filepath)
         raise FileNotFoundError(errmsg)
@@ -177,11 +176,20 @@ def check_file(filepath):
         raise RuntimeError(errmsg)
 
 
-def check_no_wrapped(filepath, fmt="fastq"):
+def check_no_wrapped(filepath: Union[str, Path], fmt: str = "fastq"):
     """
-    Check the input sequence file and raise an error if it is wrapped
+    Check the input sequence file and raise an error if it is wrapped.
+
+    Parameters
+    ----------
+    filepath :
+        path to the sequence file
+    fmt :
+        file format ('fasta' or 'fastq')
+
     """
-    filepath = Path(filepath)
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
     check_file(filepath)
 
     if filepath.suffix == ".gz":
@@ -198,7 +206,7 @@ def check_no_wrapped(filepath, fmt="fastq"):
             prog0 = prog1 = "grep"
 
     if fmt == "fasta":
-        cmd0 = "{} -n -m 20 ^> {} {}".format(prog0, filepath).split()
+        cmd0 = "{} -n -m 20 ^> {}".format(prog0, filepath).split()
         cmd1 = r"cut -d: -f1".split()
         res = subprocess.Popen(cmd0, stdout=subprocess.PIPE)
         res = subprocess.Popen(cmd1, stdin=res.stdout, stdout=subprocess.PIPE)
@@ -220,20 +228,24 @@ def check_no_wrapped(filepath, fmt="fastq"):
         assert np.any((line_nos - j) / k == np.arange(n))
 
 
-def count_records(filepath, fmt="fastq", opts=""):
+def count_records(
+    filepath: Union[str, Path], fmt: str = "fastq", opts: str = ""
+) -> int:
     """
-    Count the number of sequence records in a fasta/fastq file
+    Count the number of sequence records in a fasta/fastq file.
 
     Parameters
-    -----
-    filepath : str or pathlib.PosixPath
+    ----------
+    filepath:
         path to the input fasta/fastq file
-    fmt : ["fasta", "fastq"]
+    fmt:
         file format (default: "fasta")
-    opts : str
+    opts:
         options for grep
+
     """
-    filepath = Path(filepath)
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
     check_file(filepath)
 
     if filepath.suffix == ".gz":
@@ -272,22 +284,26 @@ def count_records(filepath, fmt="fastq", opts=""):
         raise ValueError(errmsg)
 
 
-def read_fastx(filepath, fmt="auto"):
+def read_fastx(
+    filepath: Union[str, Path], fmt: str = "auto"
+) -> Iterator[SeqIO.SeqRecord]:
     """
-    Read a fasta/fastq file and return a generator of Bio.Seq.SeqRecord objects
+    Read a fasta/fastq file and return a generator of Bio.Seq.SeqRecord objects.
 
     Parameters
-    -----
-    filepath : str or pathlib.PosixPath
+    ----------
+    filepath:
         path to the input fasta/fastq file
-    fmt : ["fasta", "fastq", "auto"]
-        file format (default: "auto")
+    fmt:
+        'fasta', 'fastq' or 'auto' (default: "auto")
 
     See Also
-    -----
+    --------
     Bio.SeqIO.parse
+
     """
-    filepath = Path(filepath)
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
 
     if fmt == "auto":
         fmt = guess_fmt(filepath)
@@ -310,15 +326,19 @@ def read_fastx(filepath, fmt="auto"):
 
 def count_uniq_seq(filepath, read_count_in_id=False, **kwargs):
     """
-    Count the number of reads for each unique sequence
+    Count the number of reads for each unique sequence.
 
     Parameters
-    -----
-    filepath : str or pathlib.PosixPath
+    ----------
+    filepath :
         path to the input fasta/fastq file
-    fmt : ["fasta", "fastq", "auto"]
-        file format (default: "auto")
-    read_count_in_id: bool
+    fmt : []
+        "fasta", "fastq" or "auto" (default: "auto")
+    read_count_in_id:
+        read counts in sequence id
+    kwargs:
+        keyward arguments
+
     """
     seq_count = {}
     for rec in read_fastx(filepath, **kwargs):
@@ -351,11 +371,11 @@ def count_uniq_seq(filepath, read_count_in_id=False, **kwargs):
 
 def gen_dict_from_table(filepath, key, value, header=True, delimiter=","):
     """
-    Generate a dict object from a tablular file
+    Generate a dict object from a tablular file.
 
     Parameters
-    -----
-    filepath : str or pathlib.PosixPath
+    ----------
+    filepath : str or Path
         path to the input tabular file
     key : int or str
         column index or name for dict key
@@ -365,6 +385,7 @@ def gen_dict_from_table(filepath, key, value, header=True, delimiter=","):
         Whether the input file contains a header row (default: True)
     delimiter : str
         delimiter character of the input file (default: ",")
+
     """
     filepath = Path(filepath)
     check_file(filepath)
@@ -383,7 +404,7 @@ def gen_dict_from_table(filepath, key, value, header=True, delimiter=","):
             hd = line.strip().split(delimiter)
             line = f.readline()
         else:
-            hd = None
+            hd = []
         items_list = []
         while line:
             items_list.append([parse_item(x) for x in line.strip().split(delimiter)])
