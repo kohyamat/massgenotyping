@@ -159,11 +159,14 @@ class AlleleCheck(object):
                     )
 
                     # add rep_data to seqdat
-                    self.add_rep_data
+                    self.add_rep_data()
 
-                    self.tree = construct_tree(
-                        self.align, self.ssr_regions, self.motifs
-                    )
+                    if len(self.align) > 1:
+                        self.tree = construct_tree(
+                            self.align, self.ssr_regions, self.motifs
+                        )
+                    else:
+                        self.tree = None
                     print("Reconstructing phylogeny ...")
             else:
                 msg = "Keep all sequences and write results?"
@@ -263,7 +266,10 @@ class AlleleCheck(object):
         self.add_allele_id()
 
         # construct an allele tree
-        self.tree = construct_tree(self.align, self.ssr_regions, self.motifs)
+        if len(self.align) > 1:
+            self.tree = construct_tree(self.align, self.ssr_regions, self.motifs)
+        else:
+            self.tree = None
 
         # add lists of potential stutter sequences
         all_seqs = [s.seq for s in self.seqdat]
@@ -290,9 +296,13 @@ class VisualAlleleCheck(object):
     """
 
     def __init__(self, seqdat, align, tree, ssr_regions, motifs, suptitle="", **kwargs):
-        self.order = [
-            int(c.name.split("_")[-1].replace("seq", "")) for c in tree.get_terminals()
-        ]
+        if tree:
+            self.order = [
+                int(c.name.split("_")[-1].replace("seq", ""))
+                for c in tree.get_terminals()
+            ]
+        else:
+            self.order = list(range(len(seqdat)))
         self.text_list = []
         for o in self.order:
             s = seqdat[o]
@@ -340,8 +350,9 @@ class VisualAlleleCheck(object):
         self.ax0.set_axis_off()
 
         # phylogeny
-        Phylo.draw(tree, do_show=False, axes=self.ax1, label_func=lambda x: None)
-        self.ax1.set_xlim((0, max(list(tree.depths().values()))))
+        if tree:
+            Phylo.draw(tree, do_show=False, axes=self.ax1, label_func=lambda x: None)
+            self.ax1.set_xlim((0, max(list(tree.depths().values()))))
 
         # sequence alignment
         align_arr = np.array(align)[self.order, :]
@@ -391,7 +402,7 @@ class VisualAlleleCheck(object):
         self.ax2.set_xticks(np.arange(0, n, 20))
         self.ax2.set_yticks(np.arange(1, m + 3))
         self.ytl2 = [re.sub("^.*\\*", "*", seqdat[o].id) for o in self.order] + [
-            "varible site",
+            "variable site",
             "SSR region",
         ]
         self.ax2.set_yticklabels(self.ytl2)
