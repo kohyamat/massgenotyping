@@ -10,9 +10,7 @@ readme = "README.rst"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
 keywords = ["genotyping", "microsatellite", "NGS", "amplicon sequencing"]
-authors = [
-  { name = "kohyamat", email = "tetsuo.kohyama@gmil.com" },
-]
+authors = [{ name = "Tetsuo Kohyama", email = "tetsuo.kohyama@gmil.com" }]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -49,29 +47,19 @@ Source = "https://github.com/kohyamat/massgenotyping"
 path = "src/massgenotyping/__about__.py"
 
 [tool.hatch.envs.default]
-dependencies = [
-  "coverage[toml]>=6.5",
-  "pytest",
-]
+dependencies = ["coverage[toml]>=6.5", "pytest"]
+
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
-cov-report = [
-  "- coverage combine",
-  "coverage report",
-]
-cov = [
-  "test-cov",
-  "cov-report",
-]
+cov-report = ["- coverage combine", "coverage report"]
+cov = ["test-cov", "cov-report"]
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.types]
-dependencies = [
-  "mypy>=1.0.0",
-]
+dependencies = ["mypy>=1.0.0"]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/massgenotyping tests}"
 
@@ -79,17 +67,11 @@ check = "mypy --install-types --non-interactive {args:src/massgenotyping tests}"
 source_pkgs = ["massgenotyping", "tests"]
 branch = true
 parallel = true
-omit = [
-  "src/massgenotyping/__about__.py",
-]
+omit = ["src/massgenotyping/__about__.py"]
 
 [tool.coverage.paths]
 massgenotyping = ["src/massgenotyping", "*/massgenotyping/src/massgenotyping"]
 tests = ["tests", "*/massgenotyping/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
