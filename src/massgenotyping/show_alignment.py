@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 
@@ -62,7 +64,7 @@ class ShowAlignment(VisualCheck):
     def text_selected(self):
         if self.txt0:
             self.txt0.remove()
-        s = u"Left click on a sequence (or press \u2191/\u2193 key) to show information"
+        s = "Left click on a sequence (or press \u2191/\u2193 key) to show information"
         self.txt0 = self.ax0.text(
             0.5, 0.6, s=s, color="grey", va="center", ha="center", wrap=True
         )

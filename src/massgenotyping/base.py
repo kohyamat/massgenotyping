@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import gzip
 import shutil
 import subprocess
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterator, List, Union, Tuple
 
 import numpy as np
 from Bio import SeqIO
@@ -36,18 +38,18 @@ class SeqData:
     id: str = field(metadata=config(field_name="id"))
     seq: str = field(metadata=config(field_name="seq"))
     counts: int = field(metadata=config(field_name="counts"))
-    length: int = field(default=int)
-    rep_data: List[RepData] = field(
+    length: int = field(default=0)
+    rep_data: list[RepData] = field(
         default_factory=list, metadata=config(field_name="rep_data")
     )
-    samples: List[str] = field(
+    samples: list[str] = field(
         default_factory=list, metadata=config(field_name="samples")
     )
     non_ssr_seq: str = field(default="", metadata=config(field_name="non_ssr_seq"))
-    stutter_s: List[str] = field(
+    stutter_s: list[str] = field(
         default_factory=list, metadata=config(field_name="stutter_s")
     )
-    stutter_l: List[str] = field(
+    stutter_l: list[str] = field(
         default_factory=list, metadata=config(field_name="stutter_l")
     )
 
@@ -61,10 +63,10 @@ class SeqData:
 class GenData:
     id: str = field(metadata=config(field_name="id"))
     n_reads_all: int = field(metadata=config(field_name="n_reads_all"))
-    genotype: List[str] = field(
+    genotype: list[str] = field(
         default_factory=list, metadata=config(field_name="genotype")
     )
-    n_reads_each: Dict[str, int] = field(
+    n_reads_each: dict[str, int] = field(
         default_factory=dict, metadata=config(field_name="n_reads_each")
     )
 
@@ -162,7 +164,7 @@ def revc(s: str) -> str:
     return s.translate(str.maketrans(o, c))[::-1]
 
 
-def check_file(filepath: Union[str, Path]):
+def check_file(filepath: str | Path):
     """Check if a path exists and if it is a file."""
     if isinstance(filepath, str):
         filepath = Path(filepath)
@@ -176,7 +178,7 @@ def check_file(filepath: Union[str, Path]):
         raise RuntimeError(errmsg)
 
 
-def check_no_wrapped(filepath: Union[str, Path], fmt: str = "fastq"):
+def check_no_wrapped(filepath: str | Path, fmt: str = "fastq"):
     """
     Check the input sequence file and raise an error if it is wrapped.
 
@@ -206,7 +208,7 @@ def check_no_wrapped(filepath: Union[str, Path], fmt: str = "fastq"):
             prog0 = prog1 = "grep"
 
     if fmt == "fasta":
-        cmd0 = "{} -n -m 20 ^> {}".format(prog0, filepath).split()
+        cmd0 = r"{} -n -m 20 ^> {}".format(prog0, filepath).split()
         cmd1 = r"cut -d: -f1".split()
         res = subprocess.Popen(cmd0, stdout=subprocess.PIPE)
         res = subprocess.Popen(cmd1, stdin=res.stdout, stdout=subprocess.PIPE)
@@ -225,12 +227,10 @@ def check_no_wrapped(filepath: Union[str, Path], fmt: str = "fastq"):
     if line_nos:
         line_nos = np.array(line_nos).astype(int)
         n = len(line_nos)
-        assert np.any((line_nos - j) / k == np.arange(n))
+        assert np.all((line_nos - j) / k == np.arange(n))
 
 
-def count_records(
-    filepath: Union[str, Path], fmt: str = "fastq", opts: str = ""
-) -> int:
+def count_records(filepath: str | Path, fmt: str = "fastq", opts: str = "") -> int:
     """
     Count the number of sequence records in a fasta/fastq file.
 
@@ -284,9 +284,7 @@ def count_records(
         raise ValueError(errmsg)
 
 
-def read_fastx(
-    filepath: Union[str, Path], fmt: str = "auto"
-) -> Iterator[SeqIO.SeqRecord]:
+def read_fastx(filepath: str | Path, fmt: str = "auto") -> Iterator[SeqIO.SeqRecord]:
     """
     Read a fasta/fastq file and return a generator of Bio.Seq.SeqRecord objects.
 
@@ -324,7 +322,7 @@ def read_fastx(
                 yield record
 
 
-def count_uniq_seq(filepath, read_count_in_id=False, **kwargs):
+def count_uniq_seq(filepath: str | Path, read_count_in_id: bool = False, **kwargs):
     """
     Count the number of reads for each unique sequence.
 
@@ -360,7 +358,9 @@ def count_uniq_seq(filepath, read_count_in_id=False, **kwargs):
     if read_count_in_id:
         seq_count = dict(
             sorted(
-                seq_count.items(), key=lambda x: (len(x[1][1]), x[1][0]), reverse=True,
+                seq_count.items(),
+                key=lambda x: (len(x[1][1]), x[1][0]),
+                reverse=True,
             )
         )
     else:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import re
 import shutil
@@ -31,7 +33,6 @@ class AlleleCheck(object):
         quiet=False,
         **kwargs,
     ):
-
         self.infile = None
         self.outdir = None
         if infile:

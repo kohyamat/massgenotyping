@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import gzip
 import os
 import signal
@@ -27,7 +29,7 @@ class Denoise:
         globalpair=False,
         n_cpu=1,
         quiet=False,
-        **kwargs
+        **kwargs,
     ):
         self.infile = infile
         self.a = a
@@ -130,7 +132,7 @@ class Denoise:
 
     @staticmethod
     def exclude_outliers_in_sequence_length(seq_count):
-        """ exclude sequences whose length is out of quantiles ± IQR * 1.5"""
+        """exclude sequences whose length is out of quantiles ± IQR * 1.5"""
         lengths, n_reads = zip(*[[len(s), c] for s, c in seq_count.items()])
         x = np.repeat(lengths, n_reads)
         if np.sum(n_reads) > 4 and len(lengths) > 4:

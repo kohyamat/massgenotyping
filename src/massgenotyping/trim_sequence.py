@@ -1,4 +1,6 @@
-from typing import Iterator, List, Tuple, Union
+from __future__ import annotations
+
+from collections.abc import Iterator
 
 import numpy as np
 from Bio import SeqIO
@@ -9,8 +11,8 @@ from .base import revc
 
 
 def sliding_window(
-    x: List[int], window_size: int = 10, step_size: int = 1
-) -> Iterator[List[int]]:
+    x: list[int], window_size: int = 10, step_size: int = 1
+) -> Iterator[list[int]]:
     """
     Generate substrings by the sliding window algorithm.
 
@@ -35,7 +37,7 @@ def trim_low_qual(
     window_size: int = 10,
     step_size: int = 1,
     return_n_trim: bool = False,
-) -> Union[SeqIO.SeqRecord, Tuple[SeqIO.SeqRecord, int]]:
+) -> SeqIO.SeqRecord | tuple[SeqIO.SeqRecord, int]:
     """
     Trim low quality bases in the 3'- side of the sequence based on the phred quality
     scores.
@@ -73,8 +75,8 @@ def trim_low_qual(
 
 def trim_primer(
     seq_record: SeqIO.SeqRecord,
-    primer_seqs: List[str],
-    max_mismatch: Union[float, int] = 0.14,
+    primer_seqs: list[str],
+    max_mismatch: float | int = 0.14,
 ) -> SeqIO.SeqRecord:
     """
     Trim primer sequences.

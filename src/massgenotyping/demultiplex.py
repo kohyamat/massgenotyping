@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import gzip
 import os
 import re
@@ -16,8 +18,15 @@ from natsort import natsorted
 from tqdm import tqdm
 
 from .argument_parser import get_args, print_args
-from .base import (MarkerData, PrimerMatch, check_file, count_records, guess_fmt,
-                   read_fastx, revc)
+from .base import (
+    MarkerData,
+    PrimerMatch,
+    check_no_wrapped,
+    count_records,
+    guess_fmt,
+    read_fastx,
+    revc,
+)
 from .utils import common_prefix
 
 
@@ -294,13 +303,19 @@ class Demultiplex(MarkerData):
             try:
                 if self.quiet:
                     res = list(
-                        pool.map(self.worker, self.iter_args(), chunksize=chunksize,)
+                        pool.map(
+                            self.worker,
+                            self.iter_args(),
+                            chunksize=chunksize,
+                        )
                     )
                 else:
                     res = list(
                         tqdm(
                             pool.imap_unordered(
-                                self.worker, self.iter_args(), chunksize=chunksize,
+                                self.worker,
+                                self.iter_args(),
+                                chunksize=chunksize,
                             ),
                             total=self.n_reads,
                         )
@@ -366,49 +381,6 @@ class Demultiplex(MarkerData):
 
         shutil.rmtree(self.tmpdir)
         return res
-
-
-def check_no_wrapped(filepath, fmt="fastq"):
-    """
-    Check the input sequence file and raise an error if it is wrapped
-    """
-    filepath = Path(filepath)
-    check_file(filepath)
-
-    if filepath.suffix == ".gz":
-        if shutil.which("rg"):
-            prog0 = "rg -z"
-            prog1 = "rg"
-        else:
-            prog0 = "zgrep"
-            prog1 = "grep"
-    else:
-        if shutil.which("rg"):
-            prog0 = prog1 = "rg"
-        else:
-            prog0 = prog1 = "grep"
-
-    if fmt == "fasta":
-        cmd0 = "{} -n -m 10 ^> {} {}".format(prog0, filepath).split()
-        cmd1 = r"cut -d: -f1".split()
-        res = subprocess.Popen(cmd0, stdout=subprocess.PIPE)
-        res = subprocess.Popen(cmd1, stdin=res.stdout, stdout=subprocess.PIPE)
-        j, k = 1, 2
-
-    elif fmt == "fastq":
-        cmd0 = r"{} -A2 ^@ {}".format(prog0, filepath).split()
-        cmd1 = r"{} -n -m 10 ^\+".format(prog1).split()
-        cmd2 = r"cut -d: -f1".split()
-        res = subprocess.Popen(cmd0, stdout=subprocess.PIPE)
-        res = subprocess.Popen(cmd1, stdin=res.stdout, stdout=subprocess.PIPE)
-        res = subprocess.Popen(cmd2, stdin=res.stdout, stdout=subprocess.PIPE)
-        j, k = 3, 4
-
-    line_nos = res.stdout.read().decode("utf-8").strip().split()
-    if line_nos:
-        line_nos = np.array(line_nos).astype(int)
-        n = len(line_nos)
-        assert np.any((line_nos - j) / k == np.arange(n))
 
 
 def _find_exact_matches(filepath, subseqs, subseq_lookup, fmt):

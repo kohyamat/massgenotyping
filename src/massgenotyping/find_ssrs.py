@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import re
+from collections.abc import Iterator
 from itertools import product
-from typing import Iterator, List, Optional, Tuple, Union
 
 from fuzzysearch.common import group_matches
 
@@ -49,7 +51,7 @@ def get_motif_class(motif: str) -> str:
         )
 
 
-def remove_gaps(seq: str) -> Tuple[str, List[int]]:
+def remove_gaps(seq: str) -> tuple[str, list[int]]:
     """Remove gaps in the given sequence."""
     seqout, idx = "", []
     for i, char in enumerate(seq):
@@ -61,13 +63,17 @@ def remove_gaps(seq: str) -> Tuple[str, List[int]]:
 
 def _find_ssrs(
     seq: str, motif: str, min_repeats: int = 3, max_interrupt: int = 0
-) -> Iterator[Tuple[int, int, int, str]]:
+) -> Iterator[tuple[int, int, int, str]]:
     seqng, idx = remove_gaps(seq.upper())
     mlen = len(motif)
 
     def find_in_index_range(
-        string: str, substring: str, n: int, start_index: int, end_index: int = None
-    ) -> Tuple[int, int, int]:
+        string: str,
+        substring: str,
+        n: int,
+        start_index: int,
+        end_index: int | None = None,
+    ) -> tuple[int, int, int]:
         try:
             start = string.find(substring * n, start_index, end_index)
         except AttributeError:
@@ -128,15 +134,15 @@ def _find_ssrs(
 def find_ssrs(
     seq: str,
     min_repeats: int = 3,
-    motif: Union[str, List[str]] = [],
-    motif_class: Union[str, List[str]] = [],
+    motif: str | list[str] = [],
+    motif_class: str | list[str] = [],
     min_motif_len: int = 2,
     max_motif_len: int = 6,
     max_interrupt: int = 0,
     start: int = 0,
-    end: Optional[int] = None,
+    end: int | None = None,
     **kwargs,
-) -> Optional[List[RepData]]:
+) -> list[RepData] | None:
     """
     Find short sequence repeats in the given sequence string.
 
@@ -197,7 +203,7 @@ def find_ssrs(
     return list(sorted(best_matches, key=lambda m: m.start))
 
 
-def get_longest_RepData(group: List[RepData]) -> RepData:
+def get_longest_RepData(group: list[RepData]) -> RepData:
     """Return the best match RepData in the group."""
     return max(group, key=lambda x: (x.n_reps, -x.start))
 

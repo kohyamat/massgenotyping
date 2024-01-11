@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import gzip
 import os
 import re
@@ -41,7 +43,6 @@ class VariantFilter(MarkerData):
         quiet=False,
         **kwargs,
     ):
-
         self.indir = Path(indir)
         self.subdirs = natsorted(
             set(
@@ -263,7 +264,10 @@ class VariantFilter(MarkerData):
                             res = list(pool.imap(self.filter, files))
                         else:
                             res = list(
-                                tqdm(pool.imap(self.filter, files), total=len(files),)
+                                tqdm(
+                                    pool.imap(self.filter, files),
+                                    total=len(files),
+                                )
                             )
                     except KeyboardInterrupt:
                         print("Caught KeyboardInterrupt, terminating workers")
@@ -301,7 +305,6 @@ class VariantFilter(MarkerData):
 
 class VisualCheck(object):
     def __init__(self, seqdat, align=None, suptitle="", in_list=None):
-
         self.draw_figure(seqdat, align, suptitle)
 
         self.labels = []
@@ -419,9 +422,6 @@ class VisualCheck(object):
         s = [6 if x > 1 else 0.25 for x in n_uniq]
         self.ax2.scatter(np.arange(0, n, 1), [-1] * n, s=s, c=c)
 
-        self.ytl2 = ["variable site"] + [re.sub(r"^.*\*", "*", s.id) for s in seqdat]
-        self.ax2.set_yticklabels(self.ytl2)
-
         self.ax2.set_title(
             "Sequence alignment (sorted in decreasing order of frequencies)"
         )
@@ -431,6 +431,8 @@ class VisualCheck(object):
         self.ax2.set_xticks(np.arange(0, n, 20))
         self.ax2.set_ylim(-1.5, m)
         self.ax2.set_yticks(np.arange(-1, m))
+        self.ytl2 = ["variable site"] + [re.sub(r"^.*\*", "*", s.id) for s in seqdat]
+        self.ax2.set_yticklabels(self.ytl2)
 
         self.ax2.spines["right"].set_visible(False)
         self.ax2.spines["top"].set_visible(False)

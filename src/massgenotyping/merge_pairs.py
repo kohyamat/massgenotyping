@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import gzip
 import os
 import shutil
@@ -33,9 +35,8 @@ class MergePairs(MarkerData):
         step_size=1,
         n_cpu=1,
         quiet=True,
-        **kwargs
+        **kwargs,
     ):
-
         if indir:
             self.indir = Path(indir)
             self.subdirs = natsorted(

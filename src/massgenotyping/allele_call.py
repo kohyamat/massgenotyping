@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import json
 import os
@@ -236,7 +238,10 @@ class AlleleCall(VariantFilter):
                         res = list(pool.imap(self.filter, files))
                     else:
                         res = list(
-                            tqdm(pool.imap(self.filter, files), total=len(files),)
+                            tqdm(
+                                pool.imap(self.filter, files),
+                                total=len(files),
+                            )
                         )
                 except KeyboardInterrupt:
                     print("Caught KeyboardInterrupt, terminating workers")

@@ -1,29 +1,23 @@
+from __future__ import annotations
+
 import argparse
 import shutil
 import sys
 from pathlib import Path
+from typing import Literal
 
+here = Path(__file__).parent.resolve()
 
-def read(rel_path):
-    here = Path.absolute(Path(__file__).parent)
-    with here.joinpath(rel_path).open("r") as fp:
-        return fp.read()
-
-
-def get_version(rel_path):
-    for line in read(rel_path).splitlines():
-        if line.startswith("__version__"):
-            delim = '"' if '"' in line else "'"
-            return line.split(delim)[1]
-    else:
-        raise RuntimeError("Unable to find version string.")
+version: dict[str, str | dict] = {}
+with (here / "__about__.py").open() as fp:
+    exec(fp.read(), version)
 
 
 def get_args(argv=None):
     # top-level parser
     parser = argparse.ArgumentParser(
         prog="mgt",
-        description="massgenotyping v{}".format(get_version("__init__.py")),
+        description="massgenotyping v{}".format(version["__version__"]),
         epilog=(
             "show subcommand help:\n"
             "  %(prog)s SUBCOMMAND -h\n\n"
@@ -33,7 +27,10 @@ def get_args(argv=None):
         formatter_class=MyFormatter,
     )
 
-    subparsers = parser.add_subparsers(dest="subcommand", metavar="SUBCOMMAND",)
+    subparsers = parser.add_subparsers(
+        dest="subcommand",
+        metavar="SUBCOMMAND",
+    )
 
     # parser for the "demultiplex" command
     parser_a = subparsers.add_parser(
@@ -138,10 +135,15 @@ def get_args(argv=None):
         help="Number of processers (default: %(default)i)",
     )
     parser_a.add_argument(
-        "--trim-primer", action="store_true", help="Trim primer sequences",
+        "--trim-primer",
+        action="store_true",
+        help="Trim primer sequences",
     )
     parser_a.add_argument(
-        "-q", "--quiet", action="store_true", help="Reduce stdout messages",
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Reduce stdout messages",
     )
 
     # parser for the "merge-pairs" command
@@ -359,7 +361,10 @@ def get_args(argv=None):
         help="Number of processers (default: %(default)i)",
     )
     parser_c.add_argument(
-        "-q", "--quiet", action="store_true", help="Reduce stdout messages",
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Reduce stdout messages",
     )
 
     # parser for the "filter" command
@@ -373,7 +378,9 @@ def get_args(argv=None):
         usage="%(prog)s [options] INDIR",
     )
     parser_d.add_argument(
-        "indir", metavar="INDIR", help="Path to the input directory",
+        "indir",
+        metavar="INDIR",
+        help="Path to the input directory",
     )
     parser_d.add_argument(
         "-g",
@@ -499,7 +506,9 @@ def get_args(argv=None):
         usage="%(prog)s [options] INDIR",
     )
     parser_e.add_argument(
-        "indir", metavar="INDIR", help="Path to the input directory",
+        "indir",
+        metavar="INDIR",
+        help="Path to the input directory",
     )
     parser_e.add_argument(
         "-s",
@@ -558,9 +567,7 @@ def get_args(argv=None):
     parser_e.add_argument(
         "--force-no-visual-check",
         action="store_true",
-        help=(
-            "Do not perform visual checking"
-        ),
+        help=("Do not perform visual checking"),
     )
     parser_e.add_argument(
         "-q", "--quiet", action="store_true", help="Reduce stdout messages"
@@ -577,7 +584,9 @@ def get_args(argv=None):
         usage="%(prog)s [options]",
     )
     parser_f.add_argument(
-        "indir", metavar="INDIR", help="Path to the input directory",
+        "indir",
+        metavar="INDIR",
+        help="Path to the input directory",
     )
     parser_f.add_argument(
         "-g",
@@ -658,9 +667,7 @@ def get_args(argv=None):
     exclusive_group_f.add_argument(
         "--force-no-visual-check",
         action="store_true",
-        help=(
-            "Do not perform visual checking."
-        ),
+        help=("Do not perform visual checking."),
     )
     parser_f.add_argument(
         "--n-cpu",
@@ -724,7 +731,6 @@ class MyFormatter(argparse.RawTextHelpFormatter):
 
     def add_argument(self, action):
         if action.help is not argparse.SUPPRESS:
-
             # find all invocations
             get_invocation = self._format_action_invocation
             invocations = [get_invocation(action)]
@@ -812,7 +818,7 @@ def check_marker_data_in_args(args):
         sys.exit(errmsg)
 
 
-def print_args(args):
+def print_args(args) -> None:
     if not isinstance(args, dict):
         args = vars(args)
     print("\nOPTIONS")
@@ -828,11 +834,16 @@ def print_args(args):
     print("")
 
 
-def gen_incomplete_string(string):
+def gen_incomplete_string(string: str) -> list[str]:
     return [string[:i] for i in range(1, len(string) + 1)]
 
 
-def ask_user(msg, default="n", quit=True, overwrite=False):
+def ask_user(
+    msg: str,
+    default: Literal["y", "n", "q", "o"],
+    quit: bool = True,
+    overwrite: bool = False,
+) -> bool:
     y = gen_incomplete_string("yes")
     n = gen_incomplete_string("no")
     q = gen_incomplete_string("quit")
@@ -850,7 +861,7 @@ def ask_user(msg, default="n", quit=True, overwrite=False):
     choice_s_full = ["[{}]{}".format(i, j[1:]) for i, j in zip(choice_s, choice_full)]
 
     for i in choice:
-        if i[0] is default:
+        if i[0] == default:
             i.append("")
             break
     else:
@@ -879,4 +890,5 @@ def ask_user(msg, default="n", quit=True, overwrite=False):
 
 
 if __name__ == "__main__":
-    print_args(get_args())
+    args = get_args()
+    print_args(args)

@@ -1,22 +1,20 @@
-from massgenotyping.argument_parser import get_args
-
-__version__ = "0.1.1"
+from .argument_parser import get_args
 
 
 def main():
     args = get_args()
     if args.subcommand == "demultiplex":
-        from massgenotyping import demultiplex
+        from . import demultiplex
 
         demultiplex.main(args)
 
     elif args.subcommand == "merge-pairs":
-        from massgenotyping import merge_pairs
+        from . import merge_pairs
 
         merge_pairs.main(args)
 
     elif args.subcommand == "denoise":
-        from massgenotyping import denoise
+        from . import denoise
 
         denoise.main(args)
 
@@ -32,21 +30,21 @@ def main():
             )
 
         if args.subcommand == "filter":
-            from massgenotyping import variant_filter
+            from . import variant_filter
 
             variant_filter.main(args)
 
         elif args.subcommand == "allele-check":
-            from massgenotyping import allele_check
+            from . import allele_check
 
             allele_check.main(args)
 
         elif args.subcommand == "allele-call":
-            from massgenotyping import allele_call
+            from . import allele_call
 
             allele_call.main(args)
 
         elif args.subcommand == "show-alignment":
-            from massgenotyping import show_alignment
+            from . import show_alignment
 
             show_alignment.main(args)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess
@@ -156,7 +158,7 @@ def run_flash(
     if stderr:
         raise RuntimeError(stderr)
     elif verbose:
-        [print(l) for l in stdout]
+        [print(line) for line in stdout]
 
     if return_max_overlap:
         return max_overlap
