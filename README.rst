@@ -35,7 +35,7 @@ Features
 Requirements
 ------------
 
-* Python 3.6 or higher
+* Python 3.8 or higher
 
 * `NGmerge <https://github.com/jsh58/NGmerge>`_
 
@@ -51,22 +51,17 @@ Installation
 
 This package works fine on Linux and macOS, but has not yet been fully tested on Windows.
 
-Install via PyPI
+Install from PyPI
 
 .. code:: bash
 
     pip3 install massgenotyping
 
-Install manually via Git
+Install the latest version from a Git repository
 
 .. code:: bash
 
-    git clone git://github.com/kohyamat/massgenotyping.git
-    cd massgenotyping
-    python3 setup.py install
-
-Use :code:`--user` option if you want to install the package into the local directory (usually under :code:`~/.local`).
-This will install the excutable :code:`mgt` under :code:`~/.local/bin`, so add :code:`~/.local/bin` to :code:`$PATH` if necessary.
+    pip install git+https://github.com/kohyamat/massgenotyping
 
 
 Usage
