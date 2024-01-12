@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = 'Python package for microsatellite genotyping from amplicon sequencing data'
 readme = "README.rst"
 requires-python = ">=3.8"
-license = { file = "LICENSE" }
+license = "MIT"
 keywords = ["genotyping", "microsatellite", "NGS", "amplicon sequencing"]
 authors = [{ name = "Tetsuo Kohyama", email = "tetsuo.kohyama@gmil.com" }]
 classifiers = [
