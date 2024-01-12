@@ -49,13 +49,11 @@ Requirements
 Installation
 ------------
 
-This package works fine on Linux and macOS, but has not yet been fully tested on Windows.
-
 Install from PyPI
 
 .. code:: bash
 
-    pip3 install massgenotyping
+    pip install massgenotyping
 
 Install the latest version from a Git repository
 
