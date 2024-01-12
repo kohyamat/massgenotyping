@@ -8,19 +8,18 @@ dynamic = ["version"]
 description = 'Python package for microsatellite genotyping from amplicon sequencing data'
 readme = "README.rst"
 requires-python = ">=3.8"
-license = "MIT"
+license = { text = "MIT" }
 keywords = ["genotyping", "microsatellite", "NGS", "amplicon sequencing"]
-authors = [{ name = "Tetsuo Kohyama", email = "tetsuo.kohyama@gmil.com" }]
+authors = [{ name = "Tetsuo Kohyama" }, { email = "tetsuo.kohyama@gmil.com" }]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
   "biopython",
