@@ -184,7 +184,9 @@ class VariantFilter(MarkerData):
                 vsc.show()
                 if vsc.selected != []:
                     break
-                elif ask_user("No sequence was selected. Proceed anyway?"):
+                elif ask_user(
+                    "No sequence was selected. Proceed anyway?", default="y", quit=False
+                ):
                     break
             keep = [1 if i in vsc.selected else 0 for i in range(len(seqdat))]
             seq_keep = [s.seq for s, k in zip(seqdat, keep) if k == 1]

@@ -581,7 +581,7 @@ def get_args(argv=None):
             "Perform BLASTn search against the database created for each marker and "
             "assign alleles to the raw sequencing data."
         ),
-        usage="%(prog)s [options]",
+        usage="%(prog)s [options] INDIR",
     )
     parser_f.add_argument(
         "indir",
