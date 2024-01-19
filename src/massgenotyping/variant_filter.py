@@ -433,7 +433,8 @@ class VisualCheck(object):
         self.ax2.set_xticks(np.arange(0, n, 20))
         self.ax2.set_ylim(-1.5, m)
         self.ax2.set_yticks(np.arange(-1, m))
-        self.ytl2 = ["variable site"] + [re.sub(r"^.*\*", "*", s.id) for s in seqdat]
+        ytls = [re.sub(r"^.*\*", "*", s.id) for s in seqdat]
+        self.ytl2 = ["variable site"] + ytls[:m]
         self.ax2.set_yticklabels(self.ytl2)
 
         self.ax2.spines["right"].set_visible(False)
