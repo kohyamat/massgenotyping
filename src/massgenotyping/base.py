@@ -266,7 +266,11 @@ def count_records(filepath: str | Path, fmt: str = "fastq", opts: str = "") -> i
     if fmt == "fasta":
         cmd0 = "{} -c ^> {} {}".format(prog0, filepath, opts).split()
         res0 = subprocess.Popen(cmd0, stdout=subprocess.PIPE)
-        return int(res0.stdout.read().decode("utf-8").strip())
+        line_no = res0.stdout.read().decode("utf-8").strip()
+        if line_no:
+            return int(line_no)
+        else:
+            return 0
 
     elif fmt == "fastq":
         cmd0 = r"{} -A2 ^@ {} {}".format(prog0, filepath, opts).split()
